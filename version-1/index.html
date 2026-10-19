@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>HELLO, WORLD!</title>
+<style>
+  :root{
+    --bg:#0D1117; --green:#39FF88; --text:#F5F5F5; --grey:#8B949E;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:var(--mono);overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;height:100dvh;max-width:520px;margin:0 auto}
+  header#bar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid #1b2230;color:var(--grey);font-size:13px}
+  header#bar .dot{color:var(--green)}
+  #mute{background:transparent;border:1px solid #1b2230;color:var(--grey);border-radius:8px;
+    padding:8px 10px;font:inherit;min-height:40px}
+  #stage{flex:1 1 auto;position:relative;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;padding:10px}
+  #controls{flex:0 0 auto;padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+  .scan{pointer-events:none;position:fixed;inset:0;z-index:50;
+    background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.14) 2px 3px);opacity:.5}
+  @media (prefers-reduced-motion:no-preference){.flicker{animation:fl 4s infinite}}
+  @keyframes fl{0%,97%,100%{opacity:.5}98%{opacity:.38}99%{opacity:.55}}
+  .dpad{display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none}
+  .drow{display:flex;gap:8px;justify-content:center}
+  .dbtn{width:64px;height:64px;font-size:22px;color:var(--green);background:#0f1520;
+    border:1px solid #223; border-radius:14px;touch-action:none}
+  .dbtn.on{background:#16351f;border-color:var(--green)}
+  .term{align-self:stretch;width:100%;padding:6px 10px;font-size:14px;line-height:1.5}
+  .tl{white-space:pre-wrap}.tl.muted{color:var(--grey)}.tl.ok{color:var(--green)}
+  .bar{height:10px;border:1px solid #223;border-radius:6px;margin:10px 0;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .09s linear}
+  .hero{color:var(--green);font-size:26px;font-weight:700;margin-top:14px;text-align:center;letter-spacing:1px}
+  .sub{color:var(--text);text-align:center;margin-top:6px;font-size:13px}
+  .invite{color:var(--green);text-align:center;margin-top:10px;font-size:14px;line-height:1.5;font-weight:700}
+  .journey{color:var(--green);text-align:center;margin-top:10px;font-size:14px;min-height:20px}
+  .journey.done::after{content:"\2588";margin-left:1px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .cta{width:100%;min-height:56px;font:inherit;font-size:16px;color:#04140b;background:var(--green);
+    border:none;border-radius:14px;font-weight:700}
+  .cta.ghost{background:#0f1520;color:var(--green);border:1px solid var(--green)}
+  a.cta{display:flex;align-items:center;justify-content:center;text-decoration:none}
+  #overlay.term,#overlay{max-height:100%;overflow:auto;width:100%}
+  #overlay.top{position:absolute;top:0;left:0;right:0;width:auto;max-height:none;overflow:visible;text-align:center;z-index:2}
+  .swatches{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .sw{min-height:48px;font:inherit;color:var(--green);background:#0f1520;border:1px solid #223;border-radius:12px}
+  #overlay.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    padding:6px 10px;color:var(--grey);font-size:12px;pointer-events:none}
+  .hud-l{color:var(--green)}
+  .toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:#0f1520;
+    border:1px solid var(--green);color:var(--green);padding:8px 12px;border-radius:10px;font-size:12px;
+    opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center}
+  .toast.show{opacity:1}
+  .tl.bad{color:#FF6B6B}
+  #controls .cta{margin-top:8px} #controls .cta:first-child{margin-top:0}
+  .ascii{color:var(--green);font-size:12px;line-height:1.35;margin:4px 0;white-space:pre;overflow-x:auto}
+  .details{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .drow2{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted #223;padding-bottom:4px}
+  .drow2 .k{color:var(--grey);font-size:12px}.drow2 .v{color:var(--text);font-size:13px;text-align:right}
+  .contrib{margin-top:18px;border:1px solid #223;border-radius:14px;padding:12px 10px 14px;background:#0f1520}
+  .ctitle{color:var(--grey);font-size:12px;text-align:center;margin-bottom:10px}
+  .crow{display:flex;justify-content:center;gap:28px}
+  .cperson{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .cperson canvas{width:60px;height:80px;image-rendering:pixelated}
+  .cname{color:var(--green);font-size:13px;font-weight:700;letter-spacing:.5px}
+  .crole{color:var(--grey);font-size:11px}
+</style>
+</head>
+<body>
+  <div id="app">
+    <header id="bar"><span><span class="dot">●</span> hello-world.exe</span>
+      <button id="mute" aria-label="toggle sound">SOUND: OFF</button></header>
+    <main id="stage"><div id="overlay"></div><canvas id="game"></canvas></main>
+    <div id="controls"></div>
+  </div>
+  <div class="scan flicker" aria-hidden="true"></div>
+  <script>
+  "use strict";
+const wedding = {
+  brideName: "ALYA HUMAIRA",
+  groomName: "HAKIM",
+  date: "[WEDDING DATE]",
+  time: "[WEDDING TIME]",
+  venue: "[VENUE]",
+  address: "[ADDRESS]",
+  dressCode: "[DRESS CODE]",
+  rsvpUrl: "[RSVP URL]",
+  mapUrl: "[MAP URL]"
+};
+
+const THEME = { bg:"#0D1117", green:"#39FF88", text:"#F5F5F5", grey:"#8B949E" };
+
+// Utilities
+const $ = (sel,root=document)=>root.querySelector(sel);
+const el = (tag,props={},...kids)=>{const n=document.createElement(tag);
+  for(const k in props){ if(k==="class")n.className=props[k];
+    else if(k==="html")n.innerHTML=props[k];
+    else if(k.startsWith("on"))n.addEventListener(k.slice(2),props[k]);
+    else n.setAttribute(k,props[k]); }
+  for(const c of kids){ if(c!=null) n.append(c.nodeType?c:document.createTextNode(c)); }
+  return n;};
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const dist=(ax,ay,bx,by)=>Math.hypot(ax-bx,ay-by);
+const circlesHit=(a,b,r)=>dist(a.x,a.y,b.x,b.y) <= r;
+const Audio_={ ctx:null, muted:true };
+function ensureAudio(){ if(!Audio_.ctx){ try{ Audio_.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function blip(freq=440,dur=0.05){ if(Audio_.muted||!Audio_.ctx) return;
+  const c=Audio_.ctx, o=c.createOscillator(), g=c.createGain();
+  o.type="square"; o.frequency.value=freq; g.gain.value=0.03;
+  o.connect(g); g.connect(c.destination); o.start();
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+dur); o.stop(c.currentTime+dur); }
+$("#mute").addEventListener("click",()=>{ ensureAudio();
+  Audio_.muted=!Audio_.muted; $("#mute").textContent="SOUND: "+(Audio_.muted?"OFF":"ON");
+  if(!Audio_.muted) blip(660); });
+
+// ---- Input: keyboard (arrows/WASD) + on-screen D-pad ----
+const Input={ up:false,down:false,left:false,right:false,
+  get x(){return (this.right?1:0)-(this.left?1:0);},
+  get y(){return (this.down?1:0)-(this.up?1:0);} };
+const KEYMAP={ArrowUp:"up",KeyW:"up",ArrowDown:"down",KeyS:"down",
+  ArrowLeft:"left",KeyA:"left",ArrowRight:"right",KeyD:"right"};
+addEventListener("keydown",e=>{ if(KEYMAP[e.code]){Input[KEYMAP[e.code]]=true;e.preventDefault();} });
+addEventListener("keyup",e=>{ if(KEYMAP[e.code]){Input[KEYMAP[e.code]]=false;e.preventDefault();} });
+
+function buildDpad(){
+  const wrap=el("div",{class:"dpad"});
+  const mk=(d,label)=>{ const b=el("button",{class:"dbtn d-"+d,"aria-label":d},label);
+    const on=e=>{e.preventDefault();Input[d]=true;b.classList.add("on");};
+    const off=e=>{e.preventDefault();Input[d]=false;b.classList.remove("on");};
+    b.addEventListener("pointerdown",on); b.addEventListener("pointerup",off);
+    b.addEventListener("pointerleave",off); b.addEventListener("pointercancel",off);
+    return b; };
+  wrap.append(el("div",{class:"drow"},mk("up","▲")),
+    el("div",{class:"drow"},mk("left","◀"),mk("down","▼"),mk("right","▶")));
+  return wrap;
+}
+
+// ---- Blocky voxel avatar renderer + palette state ----
+const SKIN=["#F1C9A5","#D9A066","#8D5524"];
+const HIJAB=["#F5F5F5","#EAD7C0","#F7C6DD","#CDE7FF","#F5D142"]; // bride hijab (default ivory/white)
+const HAIR=["#2B2B2B","#5A3A22","#111"];
+const OUTFIT=["#FF6FB5","#F5D142","#7AA2FF","#39FF88"]; // accent: bouquet / bow tie
+const AVATAR={ alya:{skin:0,hijab:0,outfit:0}, groom:{skin:0,hair:0,outfit:2} };
+// player collision point = body center, ~16px above the feet anchor
+const bodyPt=p=>({x:p.x,y:p.y-16});
+
+function shade(hex,amt){ // amt -0.3..+0.3
+  const n=parseInt(hex.slice(1),16); let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const f=x=>clamp(Math.round(x+255*amt),0,255);
+  return "#"+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,"0")).join(""); }
+
+function block(c,x,y,w,h,col){ c.fillStyle=shade(col,-0.12); c.fillRect(x,y,w,h);
+  c.fillStyle=col; c.fillRect(x,y,w-1,h-1); c.fillStyle=shade(col,0.14); c.fillRect(x,y,w-1,2); }
+
+function drawAvatar(c,x,y,who,facing=1){
+  const a=AVATAR[who];
+  const skin=SKIN[a.skin];
+  const bx=Math.round(x)-8, feet=Math.round(y);
+  if(who==="alya"){
+    // --- BRIDE: ivory gown + hijab + bouquet ---
+    const hij=HIJAB[a.hijab], bouquet=OUTFIT[a.outfit], gown="#FBFBF6";
+    block(c,bx-2,feet-6,20,6,gown);      // skirt hem (widest)
+    block(c,bx,feet-13,16,8,gown);       // skirt
+    block(c,bx+2,feet-23,12,11,gown);    // bodice
+    block(c,bx-1,feet-21,4,10,gown);     // left sleeve
+    block(c,bx+13,feet-21,4,10,gown);    // right sleeve
+    block(c,bx-1,feet-12,3,3,skin);      // left hand
+    block(c,bx+14,feet-12,3,3,skin);     // right hand
+    block(c,bx+3,feet-2,4,2,"#c9c2b0");  // shoe hint L
+    block(c,bx+9,feet-2,4,2,"#c9c2b0");  // shoe hint R
+    block(c,bx+3,feet-34,10,12,skin);    // face
+    block(c,bx+1,feet-38,14,8,hij);      // hijab crown
+    block(c,bx+1,feet-31,3,13,hij);      // left drape
+    block(c,bx+12,feet-31,3,13,hij);     // right drape
+    block(c,bx+5,feet-14,6,5,bouquet);   // bouquet blooms
+    block(c,bx+6,feet-16,2,3,"#3c8a48"); // bouquet stems
+  } else {
+    // --- GROOM: black tux + white shirt + bow tie ---
+    const hair=HAIR[a.hair], tie=OUTFIT[a.outfit], jacket="#14171d", shirt="#F7F7F2";
+    block(c,bx+2,feet-11,5,11,jacket);   // left trouser
+    block(c,bx+9,feet-11,5,11,jacket);   // right trouser
+    block(c,bx+2,feet-2,5,3,"#0a0c10");  // left shoe
+    block(c,bx+9,feet-2,5,3,"#0a0c10");  // right shoe
+    block(c,bx,feet-23,16,13,jacket);    // jacket
+    block(c,bx+6,feet-23,4,12,shirt);    // shirt panel
+    block(c,bx+4,feet-23,2,7,shade(jacket,0.12)); // left lapel
+    block(c,bx+10,feet-23,2,7,shade(jacket,0.12));// right lapel
+    block(c,bx+6,feet-23,4,3,tie);       // bow tie
+    block(c,bx-3,feet-21,4,12,jacket);   // left sleeve
+    block(c,bx+15,feet-21,4,12,jacket);  // right sleeve
+    block(c,bx-2,feet-10,3,3,skin);      // left hand
+    block(c,bx+15,feet-10,3,3,skin);     // right hand
+    block(c,bx+3,feet-34,10,12,skin);    // face
+    block(c,bx+1,feet-37,14,7,hair);     // hair crown
+    block(c,bx+1,feet-33,2,5,hair);      // left sideburn
+    block(c,bx+13,feet-33,2,5,hair);     // right sideburn
+  }
+  // eyes + soft smile (both)
+  c.fillStyle="#1a1a1a"; const ex=bx+(facing>=0?5:7);
+  c.fillRect(ex,feet-30,2,2); c.fillRect(ex+3,feet-30,2,2);
+  c.fillRect(bx+6,feet-25,3,1);
+}
+
+// Small standalone avatar canvas thumbnail (for DOM cards)
+function avatarThumb(who){
+  const cv=document.createElement("canvas"); cv.width=30; cv.height=40;
+  const g=cv.getContext("2d"); g.imageSmoothingEnabled=false;
+  drawAvatar(g,15,38,who,1);
+  return cv;
+}
+
+// GitHub-style contributors card featuring both devs
+function contributorsCard(){
+  const first=n=>(n||"").trim().split(/\s+/)[0]||n;
+  const person=(who,name)=>el("div",{class:"cperson"},
+    avatarThumb(who), el("div",{class:"cname"},first(name)),
+    el("div",{class:"crole"},"co-author \u2764\ufe0f"));
+  return el("div",{class:"contrib"},
+    el("div",{class:"ctitle"},"contributors (2)"),
+    el("div",{class:"crow"},
+      person("alya",wedding.brideName),
+      person("groom",wedding.groomName)));
+}
+
+// Self-test: pure-logic assertions, opt-in via #selftest
+function __selftest(){
+  const assert=(c,m)=>{ if(!c) throw new Error("SELFTEST FAIL: "+m); };
+  assert(wedding.brideName==="ALYA HUMAIRA","bride prefilled");
+  assert(["groomName","date","time","venue","address","dressCode","rsvpUrl","mapUrl"]
+    .every(k=>k in wedding),"config has all keys");
+  assert(clamp(5,0,3)===3 && clamp(-1,0,3)===0,"clamp");
+  assert(circlesHit({x:0,y:0},{x:3,y:4},5)===true,"hit within radius");
+  assert(circlesHit({x:0,y:0},{x:3,y:4},4.9)===false,"miss outside radius");
+  assert(typeof drawAvatar==="function","drawAvatar defined");
+  assert(SKIN.length&&OUTFIT.length&&HIJAB.length&&HAIR.length,"palettes present");
+  console.log("SELFTEST OK");
+}
+if(location.hash==="#selftest"){ try{__selftest();}catch(e){console.error(e);} }
+console.log("core loaded");
+
+const LOGW=160, LOGH=284;
+const canvas=$("#game"), ctx=canvas.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+canvas.style.imageRendering="pixelated";
+
+function fitCanvas(){
+  const stage=$("#stage");
+  const availW=stage.clientWidth-20, availH=stage.clientHeight-20;
+  const scale=Math.max(1,Math.floor(Math.min(availW/LOGW, availH/LOGH)));
+  canvas.width=LOGW; canvas.height=LOGH;
+  canvas.style.width=(LOGW*scale)+"px"; canvas.style.height=(LOGH*scale)+"px";
+}
+window.addEventListener("resize",fitCanvas);
+
+// ---- state machine ----
+const screens={};            // name -> module {init,update,draw,teardown,dom}
+let current=null, currentName=null;
+function setScreen(name,payload){
+  if(current&&current.teardown) current.teardown();
+  $("#overlay").innerHTML=""; $("#controls").innerHTML="";
+  currentName=name; current=screens[name];
+  canvas.style.display = current.usesCanvas ? "block":"none";
+  if(current.init) current.init(payload||{});
+  fitCanvas();
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(current){ if(current.update)current.update(dt);
+    if(current.usesCanvas&&current.draw){ ctx.fillStyle=THEME.bg;
+      ctx.fillRect(0,0,LOGW,LOGH); current.draw(ctx);} }
+  requestAnimationFrame(loop);
+}
+
+// ---- BOOT sequence screen ----
+function termLine(text,cls){ return el("div",{class:"tl "+(cls||"")},text); }
+
+screens.BOOT={ usesCanvas:false,
+  init(){
+    const o=$("#overlay"); o.className="term";
+    const seq=[
+      "booting...","initializing love.exe","loading memories...",
+      "Branch: forever","Uptime: lifetime","Dependencies: 1 \u2764\ufe0f"
+    ];
+    const bar=el("div",{class:"bar"},el("i")); const log=el("div",{class:"log"});
+    o.append(log,bar);
+    let i=0; const step=()=>{
+      if(i<seq.length){ log.append(termLine(seq[i], i>=3?"muted":"")); i++;
+        blip(); this._t=setTimeout(step,320);
+      } else { this._fill(bar,log); }
+    };
+    this._fill=(bar,log)=>{ let p=0; const b=$("i",bar);
+      const t=setInterval(()=>{ p+=7; b.style.width=Math.min(100,p)+"%";
+        if(p>=100){ clearInterval(t);
+          ["\u2713 System ready","\u2713 Connection established","\u2713 Two lovebirds found"]
+            .forEach(s=>log.append(termLine(s,"ok")));
+          this._tt=setTimeout(this._title,650); } },90); };
+    this._title=()=>{
+      const o=$("#overlay"); o.innerHTML="";
+      o.append(el("div",{class:"hero"},"HELLO, WORLD!"));
+      const j=el("div",{class:"journey"}); o.append(j);
+      const full="> a new journey begins"; let k=0;
+      const typ=()=>{
+        if(k<full.length){ k++; j.textContent=full.slice(0,k)+"\u2588"; this._tt=setTimeout(typ,55); }
+        else { j.textContent=full; j.classList.add("done");
+          o.append(el("div",{class:"sub"}, `${wedding.brideName} \u00d7 ${wedding.groomName} \u2014 A LOVE STORY GAME`));
+          o.append(el("div",{class:"invite"}, "We\u2019re getting married \u2014 and you\u2019re invited! \ud83d\udc8d"));
+          o.append(contributorsCard());
+          $("#controls").append(el("button",{class:"cta",onclick:()=>setScreen("L1")},"[ START GAME ]")); }
+      };
+      typ();
+    };
+    step();
+  },
+  teardown(){ clearTimeout(this._t); clearTimeout(this._tt); $("#overlay").className=""; }
+};
+
+function makePlayer(x,y){ return {x,y,facing:1,speed:70,
+  move(dt){ if(Input.x)this.facing=Input.x>0?1:-1;
+    this.x=clamp(this.x+Input.x*this.speed*dt,10,LOGW-10);
+    this.y=clamp(this.y+Input.y*this.speed*dt,26,LOGH-6); } }; }
+
+function showResult(lines,nextName,btnLabel){
+  const o=$("#overlay"); o.className="term";
+  lines.forEach(l=>o.append(el("div",{class:"tl "+(l.cls||"ok")},l.t)));
+  if(nextName) $("#controls").append(
+    el("button",{class:"cta",onclick:()=>{blip();setScreen(nextName);}}, btnLabel||"[ NEXT LEVEL ]"));
+}
+
+screens.L1={ usesCanvas:true,
+  init(){ this.p=makePlayer(80,250); this.b={x:80,y:70}; this.reached=false; this.pulse=0;
+    $("#overlay").className="hud"; $("#overlay").append(el("div",{class:"hud-l"},"LEVEL 1 \u2014 THE PROPOSAL"),
+      el("div",{class:"hud-r"},"bring the ring to your bride \ud83d\udc8d"));
+    $("#controls").append(buildDpad()); },
+  update(dt){ if(this.reached)return; this.pulse+=dt*4; this.p.move(dt);
+    if(circlesHit(bodyPt(this.p),bodyPt(this.b),16)){ this.reached=true; this._unlock(); } },
+  draw(c){
+    // bride waiting at the top
+    drawAvatar(c,this.b.x,this.b.y,"alya",1);
+    // groom (player) carrying the ring
+    drawAvatar(c,this.p.x,this.p.y,"groom",this.p.facing);
+    // glowing ring held above the groom
+    const r=3+Math.sin(this.pulse)*0.8;
+    c.strokeStyle=THEME.green; c.lineWidth=1.5; c.beginPath();
+    c.arc(this.p.x,this.p.y-42,r,0,Math.PI*2); c.stroke();
+    c.fillStyle="#F5D142"; c.fillRect(this.p.x-1,this.p.y-46,2,2); },
+  _unlock(){ $("#controls").innerHTML=""; $("#overlay").innerHTML=""; $("#overlay").className="term";
+    const o=$("#overlay");
+    o.append(el("div",{class:"tl ok"},"SHE SAID YES \u2764\ufe0f"),
+      el("div",{class:"tl ok"},"ACHIEVEMENT UNLOCKED \u2014 \ud83d\udc8d FOREVER"),
+      el("div",{class:"tl"},"A new version is ready. Do you want to deploy?"));
+    $("#controls").append(el("button",{class:"cta",onclick:()=>this._deploy(o)},"[ YES ]")); },
+  _deploy(o){ blip(); $("#controls").innerHTML="";
+    const steps=["Love ... OK","Trust ... OK","Friendship ... OK","Commitment ... OK"];
+    let i=0; this._dt=setInterval(()=>{ if(i<steps.length){ o.append(el("div",{class:"tl ok"},steps[i])); blip(); i++; }
+      else { clearInterval(this._dt); o.append(el("div",{class:"tl ok"},"READY FOR PRODUCTION"));
+        $("#controls").append(el("button",{class:"cta",onclick:()=>setScreen("L2")},"[ NEXT LEVEL \u25b6 ]")); } },420); },
+  teardown(){ clearInterval(this._dt); $("#overlay").className=""; }
+};
+
+screens.L2={ usesCanvas:false,
+  init(){ const o=$("#overlay"); o.className="term";
+    o.append(el("div",{class:"tl muted"},"LEVEL 2 \u2014 MERGE CONFLICT"));
+    o.append(el("div",{class:"tl",html:"\u26a0 MERGE CONFLICT DETECTED \u2014 Two lovebirds disagree."}));
+    this.err=el("div",{class:"tl bad"}); o.append(this.err);
+    const opt=(k,label,ok)=>el("button",{class:"cta ghost",onclick:()=>this._choose(k,ok)},label);
+    $("#controls").append(
+      opt("A","[A] git blame",false),
+      opt("B","[B] argue until 3AM",false),
+      opt("C","[C] get food",true)); },
+  _choose(k,ok){ blip();
+    if(!ok){ this.err.textContent="ERROR 409 \u2014 That did not resolve the conflict. Try again."; return; }
+    this.err.textContent=""; $("#controls").innerHTML="";
+    showResult([{t:"Conflict resolved.",cls:"ok"},
+      {t:"\u2713 Communication  \u2713 Compromise  \u2713 Food",cls:"ok"},
+      {t:"MERGE SUCCESSFUL \u2764\ufe0f"}],"L5"); },
+  teardown(){ $("#overlay").className=""; }
+};
+
+screens.L5={ usesCanvas:false,
+  init(){ const o=$("#overlay"); o.className="term";
+    const names=`${wedding.brideName} + ${wedding.groomName}`;
+    const box=[
+      "\u250c\u2500 DEPLOYMENT SUCCESSFUL \u2500\u2510",
+      "\u2502 "+names,
+      "\u2502 version:     1.0.0",
+      "\u2502 environment: MARRIAGE",
+      "\u2502 status:      \u25cf LIVE",
+      "\u2502 rollback:    DISABLED",
+      "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    ].join("\n");
+    o.append(el("pre",{class:"ascii"},box));
+    o.append(el("div",{class:"hero"},"WE'RE GETTING MARRIED!"));
+    const d=el("div",{class:"details"});
+    const row=(k,v)=>d.append(el("div",{class:"drow2"},el("span",{class:"k"},k),el("span",{class:"v"},v)));
+    row("DATE",wedding.date); row("TIME",wedding.time); row("VENUE",wedding.venue);
+    row("ADDRESS",wedding.address); row("DRESS CODE",wedding.dressCode);
+    o.append(d);
+    $("#controls").append(el("button",{class:"cta",onclick:()=>setScreen("RSVP")},"[ CONTINUE \u25b6 ]")); },
+  teardown(){ $("#overlay").className=""; }
+};
+
+screens.RSVP={ usesCanvas:false,
+  init(){ const o=$("#overlay"); o.className="term";
+    o.append(el("div",{class:"tl"},'$ rsvp --guest="your-name"'),
+      el("div",{class:"tl muted"},"ACCESS REQUESTED..."));
+    $("#controls").append(
+      el("a",{class:"cta",href:wedding.rsvpUrl,target:"_blank",rel:"noopener"},"[ RSVP NOW ]"));
+    o.append(el("div",{class:"tl"},"$ open-map"));
+    $("#controls").append(
+      el("a",{class:"cta ghost",href:wedding.mapUrl,target:"_blank",rel:"noopener"},"[ VIEW LOCATION ]"),
+      el("button",{class:"cta ghost",onclick:()=>setScreen("CLOSING")},"[ CONTINUE \u25b6 ]")); },
+  teardown(){ $("#overlay").className=""; }
+};
+
+screens.CLOSING={ usesCanvas:false,
+  init(){ const o=$("#overlay"); o.className="term";
+    o.append(el("div",{class:"hero"},"WE\u2019RE GETTING MARRIED!"));
+    o.append(el("div",{class:"invite"}, `${wedding.brideName} & ${wedding.groomName} would love you to celebrate with us \u2014 you\u2019re invited! \ud83d\udc8d`));
+    o.append(el("pre",{class:"ascii",style:"margin-top:14px"},"while (true) {\n    love();\n}"));
+    o.append(el("div",{class:"tl"},"Thank you for being part of our story."),
+      el("div",{class:"tl ok"},"> connection.status \u25cf FOREVER"));
+    o.append(el("div",{class:"tl muted",style:"margin-top:12px"},"// known issues:"),
+      el("div",{class:"tl muted"},"- Cannot stop thinking about each other"),
+      el("div",{class:"tl muted"},"- Excessive food dates"),
+      el("div",{class:"tl muted"},"- Permanent dependency detected"));
+    $("#controls").append(el("button",{class:"cta ghost",onclick:()=>setScreen("BOOT")},"[ REPLAY \u21bb ]")); },
+  teardown(){ $("#overlay").className=""; }
+};
+
+window.addEventListener("load",()=>{ fitCanvas(); setScreen("BOOT"); requestAnimationFrame(loop); });
+console.log("engine loaded");
+  </script>
+</body>
+</html>
