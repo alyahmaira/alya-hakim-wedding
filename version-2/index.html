@@ -487,8 +487,6 @@
       groom: 'assets/photos/groom-kid.jpg'
     },
     musicSrc: 'assets/music.m4a',                                       // e.g. 'assets/music.mp3' — empty = built-in music-box tune
-    rsvpEndpoint: '',                                   // Google Apps Script web-app URL (see apps-script/Code.gs).
-                                                        // Empty = RSVP is sent as a WhatsApp message to the first contact.
     contacts: [                                         // phone in international format, digits only (60 = Malaysia)
       { name: 'Ahmad Shukri', role: { ms: 'Bapa Pengantin', en: "Bride's Father" }, phone: '60120000001',
         avatar: 'assets/family/father.jpg',
@@ -577,7 +575,7 @@
       document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = I18N[lang][el.dataset.i18nPh]);
       document.querySelectorAll('#lang button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
       document.documentElement.lang = lang;
-      renderContacts(); renderThanks();
+      renderContacts(); renderThanks(); renderGroupOptions();
       document.body.classList.remove('swap');
     };
     try { localStorage.setItem('lang', lang); } catch (e) {}
@@ -608,59 +606,147 @@
   }
 
   /* ---------- RSVP ---------- */
-  const form = $('#rsvpForm'), thanks = $('#rsvpThanks'), MAXPAX = 10;
-  let pax = 1, lastReply = null;
+  const RSVP_ENDPOINT = '/api/rsvp?side=bride';
+  const GUEST_GROUP_VALUES = ['Family', 'Friends', 'Colleagues', "Parents' Friends"];
+  const form = $('#rsvpForm'), thanks = $('#rsvpThanks');
+  let lastGroupIndex = -1, lastReply = null, submitting = false;
   const attending = () => (form.querySelector('input[name=attending]:checked') || {}).value;
-  const setPax = n => { pax = Math.min(MAXPAX, Math.max(1, n)); $('#paxOut').textContent = pax; $('#paxMinus').disabled = pax <= 1; $('#paxPlus').disabled = pax >= MAXPAX; };
-  $('#paxMinus').addEventListener('click', () => setPax(pax - 1));
-  $('#paxPlus').addEventListener('click', () => setPax(pax + 1));
-  setPax(1);
+
+  /* Minimal accessible listbox dropdown: wrap owns open/close state, hover/
+     keyboard highlight and outside-click dismissal; onSelect owns what
+     happens when an option is chosen. */
+  function makeDropdown({ wrap, btn, list, onSelect }) {
+    let hl = -1;
+    const opts = () => [...list.querySelectorAll('.csel-opt')];
+    function open() {
+      wrap.classList.add('open'); list.hidden = false; btn.setAttribute('aria-expanded', 'true');
+      hl = opts().findIndex(o => o.getAttribute('aria-selected') === 'true'); paintHl();
+    }
+    function close() { wrap.classList.remove('open'); list.hidden = true; btn.setAttribute('aria-expanded', 'false'); hl = -1; }
+    function paintHl() { opts().forEach((o, i) => o.classList.toggle('hl', i === hl)); }
+    function activate(li) { if (!li) return; onSelect(li); close(); btn.focus(); }
+    btn.addEventListener('click', () => wrap.classList.contains('open') ? close() : open());
+    list.addEventListener('click', e => activate(e.target.closest('.csel-opt')));
+    document.addEventListener('click', e => { if (!wrap.contains(e.target)) close(); });
+    btn.addEventListener('keydown', e => {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' ', 'Escape'].includes(e.key)) e.preventDefault();
+      if (!wrap.classList.contains('open') && ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) { open(); return; }
+      if (e.key === 'ArrowDown') { hl = Math.min(hl + 1, opts().length - 1); paintHl(); }
+      else if (e.key === 'ArrowUp') { hl = Math.max(hl - 1, 0); paintHl(); }
+      else if (e.key === 'Enter' || e.key === ' ') { activate(opts()[hl]); }
+      else if (e.key === 'Escape') { close(); }
+    });
+    return { close };
+  }
+
+  function renderGuestOptions() {
+    const list = $('#guestsList'), current = $('#guests').value || '1';
+    list.innerHTML = [1, 2, 3, 4].map(n =>
+      `<li class="csel-opt" role="option" data-value="${n}" aria-selected="${String(n) === current}">${n}</li>`).join('');
+  }
+  makeDropdown({
+    wrap: $('#guestsSel'), btn: $('#guestsBtn'), list: $('#guestsList'),
+    onSelect(li) {
+      const n = li.dataset.value;
+      $('#guests').value = n; $('#guestsBtnVal').textContent = n;
+      [...$('#guestsList').querySelectorAll('.csel-opt')].forEach(o => o.setAttribute('aria-selected', o === li));
+    }
+  });
+  renderGuestOptions();
+
+  function renderGroupOptions() {
+    const t = I18N[LANG], list = $('#groupList');
+    const labels = t.guestgroup_labels('Alya');
+    list.innerHTML = labels.map((label, i) =>
+      `<li class="csel-opt" role="option" data-value="${GUEST_GROUP_VALUES[i]}" data-index="${i}" aria-selected="${i === lastGroupIndex}">${label}</li>`).join('');
+    if (lastGroupIndex >= 0) { $('#guestGroup').value = GUEST_GROUP_VALUES[lastGroupIndex]; $('#groupBtnVal').textContent = labels[lastGroupIndex]; }
+  }
+  makeDropdown({
+    wrap: $('#groupSel'), btn: $('#groupBtn'), list: $('#groupList'),
+    onSelect(li) {
+      lastGroupIndex = +li.dataset.index;
+      $('#guestGroup').value = li.dataset.value; $('#groupBtnVal').textContent = li.textContent;
+      [...$('#groupList').querySelectorAll('.csel-opt')].forEach(o => o.setAttribute('aria-selected', o === li));
+    }
+  });
+
   form.addEventListener('change', e => {
-    if (e.target.name === 'attending') { $('#fPax').hidden = attending() !== 'yes'; $('#fAttend').classList.remove('invalid'); }
+    if (e.target.name === 'attending') {
+      const show = attending() === 'Attending';
+      $('#fPax').hidden = !show; $('#fGroup').hidden = !show;
+      $('#fAttend').classList.remove('invalid');
+    }
   });
   $('#rName').addEventListener('input', () => $('#fName').classList.remove('invalid'));
+  $('#rPhone').addEventListener('input', () => $('#fPhone').classList.remove('invalid'));
 
-  function renderThanks(){
+  function renderThanks() {
     if (!lastReply) return;
     const t = I18N[LANG];
-    $('#thanksMsg').textContent = lastReply.attending === 'yes' ? t.thanksYes(lastReply.pax) : t.thanksNo;
+    $('#thanksMsg').textContent = lastReply.attendance === 'Attending' ? t.thanksYes(lastReply.guestCount) : t.thanksNo;
   }
-  function showThanks(reply){
+  function showThanks(reply) {
     lastReply = reply; renderThanks();
     form.hidden = true; thanks.hidden = false;
     try { localStorage.setItem('rsvp', JSON.stringify(reply)); } catch (e) {}
   }
   $('#rsvpAgain').addEventListener('click', () => {
-    form.reset(); setPax(1); $('#fPax').hidden = true; lastReply = null;
+    form.reset(); lastGroupIndex = -1;
+    $('#guestGroup').value = ''; $('#groupBtnVal').textContent = I18N[LANG].groupPlaceholder;
+    $('#guests').value = '1'; $('#guestsBtnVal').textContent = '1';
+    renderGuestOptions(); renderGroupOptions();
+    $('#fPax').hidden = true; $('#fGroup').hidden = true; lastReply = null;
     thanks.hidden = true; form.hidden = false;
     try { localStorage.removeItem('rsvp'); } catch (e) {}
   });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    const name = $('#rName').value.trim(), att = attending();
-    $('#fName').classList.toggle('invalid', !name);
-    $('#fAttend').classList.toggle('invalid', !att);
-    if (!name || !att) return (!name ? $('#rName') : form.querySelector('input[name=attending]')).focus();
+    if (submitting) return;
+    if ($('#rCompany').value) return; // honeypot tripped - a real guest never fills this; drop silently
 
-    const reply = { name, attending: att, pax: att === 'yes' ? pax : 0, notes: $('#rNotes').value.trim(), lang: LANG };
-    const t = I18N[LANG], btn = $('#rSubmit');
+    const t = I18N[LANG];
+    const name = $('#rName').value.trim(), phone = $('#rPhone').value.trim(), att = attending();
+    const guestGroup = $('#guestGroup').value, guestCount = +$('#guests').value || 0;
+
+    $('#fName').classList.toggle('invalid', !name);
+    $('#fPhone').classList.toggle('invalid', !phone);
+    $('#fAttend').classList.toggle('invalid', !att);
+    $('#fGroup').classList.toggle('invalid', att === 'Attending' && !guestGroup);
+
+    if (!name) return $('#rName').focus();
+    if (!phone) return $('#rPhone').focus();
+    if (!att) return form.querySelector('input[name=attending]').focus();
+    if (att === 'Attending' && !guestGroup) return;
+
+    const reply = {
+      name, phone, attendance: att,
+      guestCount: att === 'Attending' ? guestCount : 0,
+      guestGroup: att === 'Attending' ? guestGroup : '',
+      message: $('#rNotes').value.trim(),
+      side: 'bride'
+    };
     $('#formErr').style.display = 'none';
 
-    if (!WEDDING.rsvpEndpoint) {
-      const text = [t.waRsvp, `${t.waName}: ${reply.name}`, `${t.waAttend}: ${att === 'yes' ? t.yes : t.no}`,
-        att === 'yes' ? `${t.waPax}: ${reply.pax}` : '', reply.notes ? `${t.waNotes}: ${reply.notes}` : ''].filter(Boolean).join('\n');
-      window.open(waLink(WEDDING.contacts[0].phone, text), '_blank', 'noopener');
-      return showThanks(reply);
-    }
-
+    submitting = true;
+    const btn = $('#rSubmit');
     btn.disabled = true; btn.querySelector('span').textContent = t.sending;
     try {
-      await fetch(WEDDING.rsvpEndpoint, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(reply) });
+      const res = await fetch(RSVP_ENDPOINT, {
+        method: 'POST',
+        // text/plain keeps this a CORS "simple request" - the api/rsvp.js
+        // function reads the raw body itself rather than relying on a
+        // preflighted application/json request.
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(reply)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Unknown error');
       showThanks(reply);
     } catch (err) {
       $('#formErr').style.display = 'block';
     } finally {
+      submitting = false;
       btn.disabled = false; btn.querySelector('span').textContent = I18N[LANG].send;
     }
   });
