@@ -84,6 +84,9 @@
     font-size:15px;font-weight:600;letter-spacing:1px;text-decoration:none;box-shadow:0 6px 14px rgba(110,26,40,.25)}
   .pill.ghost{background:transparent;color:var(--burgundy);border:1px solid var(--burgundy);box-shadow:none}
   .pill[hidden]{display:none}
+  .pill-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .pill-ico{display:inline-flex;align-items:center;gap:8px;margin-top:0}
+  .pill-ico svg{width:18px;height:18px;flex:none}
   .sname{font-size:38px;color:var(--burgundy);margin:6px 0}
   .sub-caps{color:var(--burgundy);margin-top:8px;font-weight:600}
   .parents{color:var(--olive);line-height:2;font-size:13px;font-weight:700}
@@ -351,7 +354,10 @@
       <div class="line"></div>
       <p class="txt"><span data-i18n="time">11.00 pagi – 4.00 petang</span></p>
       <p class="txt venue" style="margin-top:14px"><b>ISTAC-IIUM</b><br>No. 24, Persiaran Tuanku<br>Syed Sirajuddin, Bukit Tunku,<br>50480 Kuala Lumpur</p>
-      <a class="pill" id="mapsBtn" target="_blank" rel="noopener" data-i18n="maps">Lokasi Majlis</a>
+      <div class="pill-row">
+        <a class="pill pill-ico" id="wazeBtn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Waze</span></a>
+        <a class="pill ghost pill-ico" id="mapsBtn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Google Maps</span></a>
+      </div>
     </div>
   </section>
 
@@ -498,6 +504,7 @@
         msg: { ms: 'Tak pasti jalan ke ISTAC? Saya boleh bantu!', en: 'Not sure how to get to ISTAC? I can help!' } }
     ],
     mapsUrl: 'https://www.google.com/maps/search/?api=1&query=ISTAC-IIUM%2C%2024%20Persiaran%20Tuanku%20Syed%20Sirajuddin%2C%2050480%20Kuala%20Lumpur',
+    wazeUrl: 'https://waze.com/ul?q=ISTAC-IIUM%2C%2024%20Persiaran%20Tuanku%20Syed%20Sirajuddin%2C%2050480%20Kuala%20Lumpur&navigate=yes',
     calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Majlis%20Perkahwinan%20Alya%20%26%20Hakim&dates=20261226T030000Z/20261226T080000Z&location=ISTAC-IIUM%2C%2024%20Persiaran%20Tuanku%20Syed%20Sirajuddin%2C%20Bukit%20Tunku%2C%2050480%20Kuala%20Lumpur'
   };
   /* ========================================================= */
@@ -508,6 +515,7 @@
     if (src) { el.style.backgroundImage = `url("${src}")`; el.classList.add('has-photo'); }
   });
   $('#mapsBtn').href = WEDDING.mapsUrl;
+  $('#wazeBtn').href = WEDDING.wazeUrl;
   $('#calBtn').href = WEDDING.calendarUrl;
 
   /* ---------- language ---------- */
@@ -516,7 +524,7 @@
       music: 'Muzik', weddingOf: 'MAJLIS PERKAHWINAN',
       invite: "dengan penuh kesyukuran menjemput<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Tuan / Puan / Encik / Cik<br>ke majlis perkahwinan puteri kami",
       saveDate: 'TARIKH &amp; TEMPAT', day: 'SABTU', time: '11.00 pagi – 4.00 petang',
-      maps: 'Lokasi Majlis', programme: 'ATURCARA MAJLIS',
+      programme: 'ATURCARA MAJLIS',
       p1: 'Ketibaan tetamu', p2: 'Ketibaan pengantin', p4: 'Majlis bersurai',
       countdown: 'MENGHITUNG HARI', days: 'HARI', hrs: 'JAM', min: 'MINIT', sec: 'SAAT',
       rsvp: 'RSVP Kehadiran', calendar: 'Tambah ke Kalendar',
@@ -543,7 +551,7 @@
       music: 'Music', weddingOf: 'THE WEDDING OF',
       invite: "with hearts full of gratitude, cordially invite<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Mr / Mrs / Ms<br>to the wedding reception of our daughter",
       saveDate: 'SAVE THE DATE', day: 'SATURDAY', time: '11.00 am – 4.00 pm',
-      maps: 'Get Directions', programme: 'PROGRAMME',
+      programme: 'PROGRAMME',
       p1: 'Guests arrive', p2: 'Arrival of bride and groom', p4: 'Reception ends',
       countdown: 'COUNTING DOWN', days: 'DAYS', hrs: 'HRS', min: 'MIN', sec: 'SEC',
       rsvp: 'RSVP', calendar: 'Add to Calendar',
@@ -640,7 +648,7 @@
 
   function renderGuestOptions() {
     const list = $('#guestsList'), current = $('#guests').value || '1';
-    list.innerHTML = [1, 2, 3, 4].map(n =>
+    list.innerHTML = [1, 2].map(n =>
       `<li class="csel-opt" role="option" data-value="${n}" aria-selected="${String(n) === current}">${n}</li>`).join('');
   }
   makeDropdown({
