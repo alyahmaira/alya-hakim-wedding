@@ -22,13 +22,12 @@
   @supports (height:100svh){:root{--vh:100svh}}
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-  body{font-family:'EB Garamond',Georgia,serif;color:var(--ink);background-color:var(--cream);overflow:hidden;
-    background-image:
-      linear-gradient(rgba(110,26,40,.075) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(110,26,40,.075) 1px,transparent 1px),
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-    background-size:22px 22px,22px 22px,200px 200px;background-position:-1px -1px,-1px -1px,0 0}
+  body{font-family:'EB Garamond',Georgia,serif;color:var(--ink);background:#ead8c8;overflow:hidden}
   body.opened{overflow-y:auto;overflow-x:hidden}
+  /* Desktop: the narrow column (main) sits on an opaque paper background; anything
+     outside it shows this fixed, blurred continuation of the cover photo instead of
+     bare page background, matching the envelope cover's blurred-edges treatment. */
+  #pageBackdrop{position:fixed;inset:-40px;z-index:-1;background:url(assets/scene.jpg) center/cover;filter:blur(22px) saturate(1.05)}
   .script{font-family:'Pinyon Script',cursive;font-weight:400;line-height:1.1}
   .caps{font-size:11px;letter-spacing:4px}
   .display{font-family:'Italiana',serif}
@@ -66,7 +65,13 @@
   .flyer{position:fixed;z-index:40;overflow:hidden;background:var(--print);box-shadow:0 10px 24px rgba(40,25,15,.35);pointer-events:none}
 
   /* ---------- INSIDE ---------- */
-  main{max-width:var(--col);margin:0 auto}
+  main{position:relative;max-width:var(--col);margin:0 auto;background-color:var(--cream);
+    background-image:
+      linear-gradient(rgba(110,26,40,.075) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(110,26,40,.075) 1px,transparent 1px),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size:22px 22px,22px 22px,200px 200px;background-position:-1px -1px,-1px -1px,0 0}
+  @media (min-width:700px){main{box-shadow:0 0 60px rgba(60,30,20,.35)}}
   section{position:relative;min-height:min(700px,var(--vh));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 30px;text-align:center}
   section.hero{min-height:var(--vh)}
   section:last-child{min-height:var(--vh);padding-bottom:170px}
@@ -327,6 +332,7 @@
 </style>
 </head>
 <body>
+<div id="pageBackdrop" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="bow" viewBox="0 0 60 40"><path d="M30 18C21 6 7 6 8 15c1 10 14 9 22 3Zm0 0c9-12 23-12 22-3-1 10-14 9-22 3Z" fill="none" stroke="#6e1a28" stroke-width="1.8"/><path d="M28 19 21 35M32 19l7 16" stroke="#6e1a28" stroke-width="1.8" stroke-linecap="round"/><circle cx="30" cy="18" r="3" fill="#6e1a28"/></symbol>
