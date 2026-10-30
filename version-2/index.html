@@ -36,6 +36,7 @@
   /* photo fill */
   .img{width:100%;height:100%;background:linear-gradient(160deg,#d9c3a3,#a78a68);background-repeat:no-repeat;filter:sepia(.35) saturate(.9)}
   .img.has-photo{background-position:52% 0%;background-size:125% auto}
+  [data-photo="bride"].img.has-photo{background-position:58% 30%;background-size:180% auto}
 
   /* ---------- OPENING ---------- */
   .cover{position:fixed;inset:0;z-index:20;overflow:hidden;background:#ead8c8;transition:opacity 1s ease;cursor:pointer;outline:none}
@@ -209,10 +210,9 @@
 
   .gallery-strip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 20px 14px;-webkit-overflow-scrolling:touch}
   .gallery-strip::-webkit-scrollbar{display:none}
-  .gallery-item{flex:0 0 auto;width:150px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;scroll-snap-align:center;cursor:pointer;
+  .gallery-item{flex:0 0 auto;width:150px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;scroll-snap-align:center;
     box-shadow:0 10px 22px -12px rgba(70,40,20,.45);border:1px solid rgba(201,163,92,.4);background-position:center;background-size:cover;background-repeat:no-repeat}
   .gallery-item:not([style*="background-image"]){background:linear-gradient(160deg,#d9c3a3,#a78a68)}
-  .gallery-lightbox-img{width:100%;aspect-ratio:3/4;border-radius:8px;background-position:center;background-size:cover;background-repeat:no-repeat;background-color:#efe7d8}
 
   .tags{width:100%;max-width:380px;margin-top:22px;display:flex;flex-direction:column;gap:12px}
   .tag{position:relative;display:flex;align-items:center;gap:12px;padding:15px 14px 15px 40px;background:#fbf7ee;text-align:left;
@@ -538,19 +538,12 @@
   </div>
 </div>
 
-<div class="dialog-overlay" id="galleryDialog" aria-hidden="true">
-  <div class="dialog-card" role="dialog" aria-label="Photo" style="padding:12px;max-width:420px">
-    <button type="button" class="dialog-close" id="galleryCloseBtn" aria-label="Close" style="background:#fbf7ee;box-shadow:0 2px 8px rgba(0,0,0,.25)">&times;</button>
-    <div class="gallery-lightbox-img" id="galleryLightboxImg"></div>
-  </div>
-</div>
-
 <script>
   /* ================= SETTINGS — edit these ================= */
   const WEDDING = {
     start: '2026-12-26T11:00:00+08:00',                 // countdown target (Malaysia time)
     photos: {                                           // childhood photos (portrait, face near the top)
-      bride: 'assets/photos/kid-placeholder.jpg',
+      bride: 'assets/photos/bride-kid.jpg',
       groom: 'assets/photos/groom-kid.jpg'
     },
     musicSrc: 'assets/music.m4a',                                       // e.g. 'assets/music.mp3' — empty = built-in music-box tune
@@ -600,23 +593,10 @@
   giftDialog.addEventListener('click', e => { if (e.target === giftDialog) closeGift(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && giftDialog.classList.contains('open')) closeGift(); });
 
-  /* ---------- gallery ---------- */
-  const galleryDialog = $('#galleryDialog');
-  const openGallery = src => {
-    $('#galleryLightboxImg').style.backgroundImage = src ? `url("${src}")` : 'none';
-    galleryDialog.classList.add('open'); galleryDialog.setAttribute('aria-hidden', 'false');
-  };
-  const closeGallery = () => { galleryDialog.classList.remove('open'); galleryDialog.setAttribute('aria-hidden', 'true'); };
+  /* ---------- gallery (plain slidable strip, no click-to-enlarge) ---------- */
   $('#galleryStrip').innerHTML = WEDDING.gallery.map((src, i) =>
-    `<div class="gallery-item" data-src="${src}" ${src ? `style="background-image:url('${src}')"` : ''} role="button" tabindex="0" aria-label="Photo ${i + 1}"></div>`
+    `<div class="gallery-item" ${src ? `style="background-image:url('${src}')"` : ''} aria-label="Photo ${i + 1}"></div>`
   ).join('');
-  $('#galleryStrip').addEventListener('click', e => {
-    const item = e.target.closest('.gallery-item');
-    if (item) openGallery(item.dataset.src);
-  });
-  $('#galleryCloseBtn').addEventListener('click', closeGallery);
-  galleryDialog.addEventListener('click', e => { if (e.target === galleryDialog) closeGallery(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && galleryDialog.classList.contains('open')) closeGallery(); });
 
   /* ---------- language ---------- */
   const I18N = {
