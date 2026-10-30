@@ -394,26 +394,49 @@
           <input class="pin" type="text" id="rName" name="name" autocomplete="name" maxlength="80" data-i18n-ph="phName" placeholder="Nama penuh">
           <div class="err" data-i18n="errName">Sila isi nama anda</div>
         </div>
+        <div class="prow" id="fPhone">
+          <label for="rPhone" data-i18n="fPhone">Nombor Telefon</label>
+          <input class="pin" type="tel" id="rPhone" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" data-i18n-ph="phPhone" placeholder="012-3456789">
+          <div class="err" data-i18n="errPhone">Sila isi nombor telefon anda</div>
+        </div>
         <div class="prow" id="fAttend">
           <div class="lb" data-i18n="fAttend">Kehadiran</div>
           <div class="opts" role="radiogroup">
-            <label class="op"><input type="radio" name="attending" value="yes"><i></i><span data-i18n="yes">Hadir</span></label>
-            <label class="op"><input type="radio" name="attending" value="no"><i></i><span data-i18n="no">Tidak hadir</span></label>
+            <label class="op"><input type="radio" name="attending" value="Attending"><i></i><span data-i18n="yes">Hadir</span></label>
+            <label class="op"><input type="radio" name="attending" value="Not Attending"><i></i><span data-i18n="no">Tidak hadir</span></label>
           </div>
           <div class="err" data-i18n="errAttend">Sila pilih kehadiran</div>
         </div>
         <div class="prow" id="fPax" hidden>
           <div class="lb" data-i18n="fPax">Bilangan orang</div>
-          <div class="step">
-            <button type="button" id="paxMinus" aria-label="−">−</button>
-            <output id="paxOut" aria-live="polite">1</output>
-            <button type="button" id="paxPlus" aria-label="+">+</button>
-            <small data-i18n="paxUnit">orang</small>
+          <div class="csel" id="guestsSel">
+            <button type="button" class="csel-btn" id="guestsBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="fPax guestsBtn">
+              <span id="guestsBtnVal">1</span>
+              <span class="csel-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <ul class="csel-list" id="guestsList" role="listbox" aria-labelledby="fPax" tabindex="-1" hidden></ul>
           </div>
+          <input type="hidden" id="guests" name="guests" value="1">
+        </div>
+        <div class="prow" id="fGroup" hidden>
+          <div class="lb" data-i18n="fGroup">Kumpulan Tetamu</div>
+          <div class="csel" id="groupSel">
+            <button type="button" class="csel-btn" id="groupBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="fGroup groupBtn">
+              <span id="groupBtnVal" data-i18n="groupPlaceholder">Pilih satu</span>
+              <span class="csel-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <ul class="csel-list" id="groupList" role="listbox" aria-labelledby="fGroup" tabindex="-1" hidden></ul>
+          </div>
+          <input type="hidden" id="guestGroup" name="guestGroup" value="">
+          <div class="err" data-i18n="errGroup">Sila pilih kumpulan tetamu</div>
         </div>
         <div class="prow">
           <label for="rNotes" data-i18n="fNotes">Catatan</label>
-          <textarea class="pin" id="rNotes" name="notes" maxlength="500" data-i18n-ph="phNotes" placeholder="Ucapan atau catatan (tidak wajib)"></textarea>
+          <textarea class="pin" id="rNotes" name="message" maxlength="500" data-i18n-ph="phNotes" placeholder="Ucapan atau catatan (tidak wajib)"></textarea>
+        </div>
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">
+          <label for="rCompany">Company</label>
+          <input id="rCompany" name="company" type="text" tabindex="-1" autocomplete="off">
         </div>
         <div class="send"><button class="submit" type="submit" id="rSubmit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="m3.5 6.5 8.5 7 8.5-7"/></svg><span data-i18n="send">Hantar</span></button></div>
         <div class="formerr" id="formErr" data-i18n="sendErr">Maaf, tidak dapat dihantar. Sila cuba lagi.</div>
