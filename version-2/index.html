@@ -361,6 +361,7 @@
   <section>
     <div class="rv">
       <div class="caps label" style="margin-bottom:16px">BISMILLAHIRRAHMANIRRAHIM</div>
+      <p class="txt" style="margin-bottom:16px" data-i18n="greeting">Assalamualaikum dan Selamat Sejahtera<br>Dengan nama Allah yang Maha Pengasih<br>lagi Maha Penyayang</p>
       <p class="caps parents">HJ. AHMAD SHUKRI BIN HARUN<br>&amp;<br>HANI SORAYA BINTI ISHAK</p>
       <div class="line"></div>
       <p class="txt" data-i18n="invite">dengan penuh kesyukuran menjemput<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Tuan / Puan / Encik / Cik<br>ke majlis perkahwinan puteri kami</p>
@@ -580,6 +581,7 @@
   const I18N = {
     ms: {
       music: 'Muzik', weddingOf: 'MAJLIS PERKAHWINAN',
+      greeting: 'Assalamualaikum dan Selamat Sejahtera<br>Dengan nama Allah yang Maha Pengasih<br>lagi Maha Penyayang',
       invite: "dengan penuh kesyukuran menjemput<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Tuan / Puan / Encik / Cik<br>ke majlis perkahwinan puteri kami",
       saveDate: 'TARIKH &amp; TEMPAT', day: 'SABTU', time: '11.00 pagi – 4.00 petang',
       programme: 'ATURCARA MAJLIS',
@@ -608,6 +610,7 @@
     },
     en: {
       music: 'Music', weddingOf: 'THE WEDDING OF',
+      greeting: 'Peace and blessings be upon you<br>In the name of Allah, the Most Gracious,<br>the Most Merciful',
       invite: "with hearts full of gratitude, cordially invite<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Mr / Mrs / Ms<br>to the wedding reception of our daughter",
       saveDate: 'SAVE THE DATE', day: 'SATURDAY', time: '11.00 am – 4.00 pm',
       programme: 'PROGRAMME',
@@ -947,13 +950,16 @@
     </svg>`;
   function startButterflies(){
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const colours = [['#e9b7bd', '#d99aa5'], ['#8b2232', '#6e1a28'], ['#e9b7bd', '#c98a96']];
+    const colours = [
+      ['#e9b7bd', '#d99aa5'], ['#8b2232', '#6e1a28'], ['#e9b7bd', '#c98a96'],
+      ['#c9a35c', '#a97f3a'], ['#8b2232', '#c98a96'], ['#e9b7bd', '#6e1a28']
+    ];
     let W = innerWidth, H = innerHeight;
     addEventListener('resize', () => { W = innerWidth; H = innerHeight; });
     const flies = colours.map(([a, b], i) => {
       const el = document.createElement('div');
       el.className = 'bfly'; el.setAttribute('aria-hidden', 'true'); el.innerHTML = WING(a, b);
-      const sc = i === 1 ? .8 : 1; el.style.width = 30 * sc + 'px'; el.style.height = 24 * sc + 'px';
+      const sc = .75 + Math.random() * .4; el.style.width = 30 * sc + 'px'; el.style.height = 24 * sc + 'px';
       el.querySelectorAll('.wl,.wr').forEach(g => g.style.animationDuration = (.18 + Math.random() * .1) + 's');
       document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('on'));
       return {el, x: W / 2 + (Math.random() - .5) * Math.min(W, 420), y: H * (.2 + .6 * Math.random()), a: Math.random() * Math.PI * 2, turn: 0, speed: .7 + Math.random() * .5, rest: 0};
