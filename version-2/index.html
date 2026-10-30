@@ -407,7 +407,7 @@
           </div>
           <div class="err" data-i18n="errAttend">Sila pilih kehadiran</div>
         </div>
-        <div class="prow" id="fPax" hidden>
+        <div class="prow" id="fPax">
           <div class="lb" data-i18n="fPax">Bilangan orang</div>
           <div class="csel" id="guestsSel">
             <button type="button" class="csel-btn" id="guestsBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="fPax guestsBtn">
@@ -418,7 +418,7 @@
           </div>
           <input type="hidden" id="guests" name="guests" value="1">
         </div>
-        <div class="prow" id="fGroup" hidden>
+        <div class="prow" id="fGroup">
           <div class="lb" data-i18n="fGroup">Kumpulan Tetamu</div>
           <div class="csel" id="groupSel">
             <button type="button" class="csel-btn" id="groupBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="fGroup groupBtn">
@@ -671,11 +671,7 @@
   });
 
   form.addEventListener('change', e => {
-    if (e.target.name === 'attending') {
-      const show = attending() === 'Attending';
-      $('#fPax').hidden = !show; $('#fGroup').hidden = !show;
-      $('#fAttend').classList.remove('invalid');
-    }
+    if (e.target.name === 'attending') { $('#fAttend').classList.remove('invalid'); }
   });
   $('#rName').addEventListener('input', () => $('#fName').classList.remove('invalid'));
   $('#rPhone').addEventListener('input', () => $('#fPhone').classList.remove('invalid'));
@@ -695,7 +691,7 @@
     $('#guestGroup').value = ''; $('#groupBtnVal').textContent = I18N[LANG].groupPlaceholder;
     $('#guests').value = '1'; $('#guestsBtnVal').textContent = '1';
     renderGuestOptions(); renderGroupOptions();
-    $('#fPax').hidden = true; $('#fGroup').hidden = true; lastReply = null;
+    lastReply = null;
     thanks.hidden = true; form.hidden = false;
     try { localStorage.removeItem('rsvp'); } catch (e) {}
   });
@@ -712,17 +708,16 @@
     $('#fName').classList.toggle('invalid', !name);
     $('#fPhone').classList.toggle('invalid', !phone);
     $('#fAttend').classList.toggle('invalid', !att);
-    $('#fGroup').classList.toggle('invalid', att === 'Attending' && !guestGroup);
+    $('#fGroup').classList.toggle('invalid', !guestGroup);
 
     if (!name) return $('#rName').focus();
     if (!phone) return $('#rPhone').focus();
     if (!att) return form.querySelector('input[name=attending]').focus();
-    if (att === 'Attending' && !guestGroup) return;
+    if (!guestGroup) return;
 
     const reply = {
       name, phone, attendance: att,
-      guestCount: att === 'Attending' ? guestCount : 0,
-      guestGroup: att === 'Attending' ? guestGroup : '',
+      guestCount, guestGroup,
       message: $('#rNotes').value.trim(),
       side: 'bride'
     };
