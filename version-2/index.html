@@ -163,6 +163,23 @@
   .step button:disabled{opacity:.3;cursor:default}
   .step output{min-width:24px;text-align:center;font-family:'Italiana',serif;font-size:30px;color:var(--burgundy)}
   .step small{font-size:17px;opacity:.8}
+  .csel{position:relative;margin-top:8px}
+  .csel-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;font:500 19px/1.4 'EB Garamond',Georgia,serif;
+    text-align:left;color:var(--burgundy);background:transparent;border:0;border-bottom:1px solid rgba(110,26,40,.25);border-radius:0;
+    padding:7px 0 6px;cursor:pointer;transition:border-color .2s}
+  .csel-btn:focus-visible,.csel.open .csel-btn{outline:none;border-bottom-color:var(--burgundy)}
+  .csel-arrow{width:13px;height:13px;flex:none;color:var(--burgundy);transition:transform .2s ease}
+  .csel-arrow svg{display:block;width:100%;height:100%}
+  .csel.open .csel-arrow{transform:rotate(180deg)}
+  .csel-list{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:5;margin:0;padding:6px;list-style:none;
+    background:#fbf7ee;border:1px solid rgba(201,163,92,.45);border-radius:10px;box-shadow:0 16px 36px -16px rgba(70,40,20,.5);
+    max-height:220px;overflow-y:auto;opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;
+    transition:opacity .16s ease,transform .16s ease}
+  .csel.open .csel-list{opacity:1;transform:none;pointer-events:auto}
+  .csel-opt{padding:10px 12px;border-radius:6px;cursor:pointer;color:var(--ink)}
+  .csel-opt:hover,.csel-opt.hl{background:rgba(201,163,92,.18)}
+  .csel-opt[aria-selected="true"]{color:var(--burgundy);font-weight:600}
+  .prow.invalid .csel-btn{border-bottom-color:#a3221b}
   .prow[hidden]{display:none}
   .send{display:flex;justify-content:flex-end;margin-top:24px}
   .submit{display:inline-flex;align-items:center;gap:9px;padding:12px 26px;border:0;border-radius:30px;background:var(--burgundy);color:#f7efe2;
@@ -232,6 +249,8 @@
   .pin{font-size:20px}
   .op{font-size:20px}
   .step small{font-size:18px}
+  .csel-btn{font-size:20px}
+  .csel-opt{font-size:19px}
   .submit{font-size:17px;letter-spacing:2px;padding:13px 28px}
   .err,.formerr{font-size:17px}
   .thanks p{font-size:20px}
