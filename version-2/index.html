@@ -207,6 +207,13 @@
     background:var(--burgundy);color:#f7efe2;box-shadow:0 6px 14px rgba(110,26,40,.35);text-decoration:none}
   .gift-save svg{width:19px;height:19px}
 
+  .gallery-strip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 20px 14px;-webkit-overflow-scrolling:touch}
+  .gallery-strip::-webkit-scrollbar{display:none}
+  .gallery-item{flex:0 0 auto;width:150px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;scroll-snap-align:center;cursor:pointer;
+    box-shadow:0 10px 22px -12px rgba(70,40,20,.45);border:1px solid rgba(201,163,92,.4);background-position:center;background-size:cover;background-repeat:no-repeat}
+  .gallery-item:not([style*="background-image"]){background:linear-gradient(160deg,#d9c3a3,#a78a68)}
+  .gallery-lightbox-img{width:100%;aspect-ratio:3/4;border-radius:8px;background-position:center;background-size:cover;background-repeat:no-repeat;background-color:#efe7d8}
+
   .tags{width:100%;max-width:380px;margin-top:22px;display:flex;flex-direction:column;gap:12px}
   .tag{position:relative;display:flex;align-items:center;gap:12px;padding:15px 14px 15px 40px;background:#fbf7ee;text-align:left;
     clip-path:polygon(16px 0,100% 0,100% 100%,16px 100%,0 50%);box-shadow:inset 0 0 0 1px rgba(201,163,92,.35)}
@@ -482,6 +489,14 @@
     </div>
   </section>
 
+  <section id="gallery" style="padding-left:0;padding-right:0">
+    <div class="rv" style="width:100%">
+      <svg class="ico" width="66" height="44" aria-hidden="true"><use href="#bow"/></svg>
+      <div class="caps label" data-i18n="galleryTitle">GALERI KAMI</div>
+      <div class="gallery-strip" id="galleryStrip"></div>
+    </div>
+  </section>
+
   <section id="contact">
     <div class="rv" style="width:100%;display:flex;flex-direction:column;align-items:center">
       <div class="caps label" data-i18n="contactTitle">HUBUNGI KAMI</div>
@@ -525,6 +540,13 @@
   </div>
 </div>
 
+<div class="dialog-overlay" id="galleryDialog" aria-hidden="true">
+  <div class="dialog-card" role="dialog" aria-label="Photo" style="padding:12px;max-width:420px">
+    <button type="button" class="dialog-close" id="galleryCloseBtn" aria-label="Close" style="background:#fbf7ee;box-shadow:0 2px 8px rgba(0,0,0,.25)">&times;</button>
+    <div class="gallery-lightbox-img" id="galleryLightboxImg"></div>
+  </div>
+</div>
+
 <script>
   /* ================= SETTINGS — edit these ================= */
   const WEDDING = {
@@ -550,7 +572,10 @@
     calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Majlis%20Perkahwinan%20Alya%20%26%20Hakim&dates=20261226T030000Z/20261226T080000Z&location=ISTAC-IIUM%2C%2024%20Persiaran%20Tuanku%20Syed%20Sirajuddin%2C%20Bukit%20Tunku%2C%2050480%20Kuala%20Lumpur',
     gift: {
       qrImage: 'assets/gift-qr.jpg'                       // empty = dashed placeholder box instead
-    }
+    },
+    gallery: [                                            // couple photos - add paths here, e.g. 'assets/gallery/1.jpg'.
+      '', '', '', '', '', ''                              // empty string = gradient placeholder box (swap in real photos later)
+    ]
   };
   /* ========================================================= */
 
@@ -577,11 +602,30 @@
   giftDialog.addEventListener('click', e => { if (e.target === giftDialog) closeGift(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && giftDialog.classList.contains('open')) closeGift(); });
 
+  /* ---------- gallery ---------- */
+  const galleryDialog = $('#galleryDialog');
+  const openGallery = src => {
+    $('#galleryLightboxImg').style.backgroundImage = src ? `url("${src}")` : 'none';
+    galleryDialog.classList.add('open'); galleryDialog.setAttribute('aria-hidden', 'false');
+  };
+  const closeGallery = () => { galleryDialog.classList.remove('open'); galleryDialog.setAttribute('aria-hidden', 'true'); };
+  $('#galleryStrip').innerHTML = WEDDING.gallery.map((src, i) =>
+    `<div class="gallery-item" data-src="${src}" ${src ? `style="background-image:url('${src}')"` : ''} role="button" tabindex="0" aria-label="Photo ${i + 1}"></div>`
+  ).join('');
+  $('#galleryStrip').addEventListener('click', e => {
+    const item = e.target.closest('.gallery-item');
+    if (item) openGallery(item.dataset.src);
+  });
+  $('#galleryCloseBtn').addEventListener('click', closeGallery);
+  galleryDialog.addEventListener('click', e => { if (e.target === galleryDialog) closeGallery(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && galleryDialog.classList.contains('open')) closeGallery(); });
+
   /* ---------- language ---------- */
   const I18N = {
     ms: {
       music: 'Muzik', weddingOf: 'MAJLIS PERKAHWINAN',
       greeting: 'Assalamualaikum dan Selamat Sejahtera<br>Dengan nama Allah yang Maha Pengasih<br>lagi Maha Penyayang',
+      galleryTitle: 'GALERI KAMI',
       invite: "dengan penuh kesyukuran menjemput<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Tuan / Puan / Encik / Cik<br>ke majlis perkahwinan puteri kami",
       saveDate: 'TARIKH &amp; TEMPAT', day: 'SABTU', time: '11.00 pagi – 4.00 petang',
       programme: 'ATURCARA MAJLIS',
@@ -611,6 +655,7 @@
     en: {
       music: 'Music', weddingOf: 'THE WEDDING OF',
       greeting: 'Peace and blessings be upon you<br>In the name of Allah, the Most Gracious,<br>the Most Merciful',
+      galleryTitle: 'OUR GALLERY',
       invite: "with hearts full of gratitude, cordially invite<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Mr / Mrs / Ms<br>to the wedding reception of our daughter",
       saveDate: 'SAVE THE DATE', day: 'SATURDAY', time: '11.00 am – 4.00 pm',
       programme: 'PROGRAMME',
