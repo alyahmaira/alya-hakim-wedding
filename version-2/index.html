@@ -554,7 +554,10 @@
       bride: 'assets/photos/bride-kid.jpg',
       groom: 'assets/photos/groom-kid.jpg'
     },
-    musicSrc: 'assets/music.m4a',                                       // e.g. 'assets/music.mp3' — empty = built-in music-box tune
+    music: {                                             // background music, played via hidden YouTube IFrame player
+      youtubeId: 'c3WQtYn-_HQ',                          // YouTube video ID (the part after watch?v=)
+      startTime: 1                                       // seconds - where playback (and the loop restart) begins
+    },
     contacts: [                                         // phone in international format, digits only (60 = Malaysia)
       { name: 'Hj. Ahmad Shukri', role: { ms: 'Bapa Pengantin', en: "Bride's Father" }, phone: '60193178840',
         avatar: 'assets/family/father.jpg',
@@ -872,66 +875,109 @@
   let saved = 'ms'; try { saved = localStorage.getItem('lang') || 'ms'; } catch (e) {}
   setLang(saved, false);
 
-  /* ---------- music ---------- */
+  /* ---------- music (YouTube IFrame API, hidden player) ----------
+     Replaces the old local-file/synthesized player. Loads the YouTube
+     IFrame API, creates a visually hidden player for WEDDING.music.youtubeId,
+     and plays it starting at WEDDING.music.startTime. If the browser blocks
+     autoplay (common once our own user-gesture window has expired while the
+     API/player were still loading), it arms a one-time "first click/touch
+     anywhere" listener and retries then - the existing music button's icon
+     reacts automatically once real playback begins. On ENDED it seeks back
+     to startTime and replays, looping seamlessly from that point instead of
+     from 0:00. Dispatches music-ready / music-error / music-autoplay-blocked
+     on `document` so other code (or a future fallback banner) can react. */
+  const musicBtn = $('#music');
   const Music = (() => {
-    let audio, ctx, master, timer, next = 0, step = 0, on = false;
-    const hz = n => 440 * Math.pow(2, (n - 69) / 12);
-    const CH = [[60,64,67,72],[57,60,64,69],[53,57,60,65],[55,59,62,67]];
-    const ARP = [0,1,2,3,2,1,2,1];
-    const MEL = [76,0,74,72,0,0,79,0, 76,0,72,0,74,0,0,0, 77,0,76,74,0,72,0,0, 74,0,71,0,79,0,0,0];
-    const E = 60 / 72 / 2;
-    function reverb(){
-      const len = ctx.sampleRate * 2.6, buf = ctx.createBuffer(2, len, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
-      const cv = ctx.createConvolver(); cv.buffer = buf; return cv;
+    const { youtubeId: VIDEO_ID, startTime: START_TIME } = WEDDING.music;
+    let player = null, apiReady = false, wantsPlay = false, playing = false, everPlayed = false, unlockBound = false;
+
+    function setPlaying(v){
+      if (playing === v) return;
+      playing = v;
+      musicBtn.classList.toggle('playing', v);
     }
-    function tone(t, n, vel, dur){
-      const g = ctx.createGain(); g.connect(master);
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vel, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-      [[1,'sine',1],[2,'triangle',.25],[3.01,'sine',.08]].forEach(([m, type, v]) => {
-        const o = ctx.createOscillator(), og = ctx.createGain(); o.type = type; o.frequency.value = hz(n) * m; og.gain.value = v;
-        o.connect(og).connect(g); o.start(t); o.stop(t + dur + .05);
+
+    function loadApi(){
+      if (window.YT && window.YT.Player) return onApiReady();
+      if (document.getElementById('yt-iframe-api')) return;
+      const prevReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => { prevReady && prevReady(); onApiReady(); };
+      const tag = document.createElement('script');
+      tag.id = 'yt-iframe-api'; tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    function onApiReady(){
+      const holder = document.createElement('div');
+      holder.id = 'ytMusicPlayer';
+      holder.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none';
+      document.body.appendChild(holder);
+      player = new YT.Player('ytMusicPlayer', {
+        videoId: VIDEO_ID, width: 1, height: 1,
+        playerVars: { autoplay: 0, start: START_TIME, controls: 0, disablekb: 1, playsinline: 1, modestbranding: 1 },
+        events: {
+          onReady(){ apiReady = true; if (wantsPlay) attemptPlay(); },
+          onStateChange(e){
+            if (e.data === YT.PlayerState.PLAYING) {
+              setPlaying(true);
+              if (!everPlayed) { everPlayed = true; document.dispatchEvent(new CustomEvent('music-ready')); }
+            } else if (e.data === YT.PlayerState.PAUSED) {
+              setPlaying(false);
+            } else if (e.data === YT.PlayerState.ENDED) {
+              player.seekTo(START_TIME, true);
+              player.playVideo();
+            }
+          },
+          onError(e){
+            document.dispatchEvent(new CustomEvent('music-error', { detail: e.data }));
+            armUnlock();
+          }
+        }
       });
     }
-    function schedule(){
-      while (next < ctx.currentTime + .25) {
-        const chord = CH[Math.floor(step / 8) % 4], s = step % 8;
-        tone(next, chord[ARP[s]], .07, 1.6);
-        if (s === 0) tone(next, chord[0] - 12, .09, 3.2);
-        const m = MEL[step % 32]; if (m) tone(next, m, .11, 2.2);
-        next += E; step++;
-      }
+
+    function attemptPlay(){
+      if (!player || !player.playVideo) return;
+      player.seekTo(START_TIME, true);
+      player.playVideo();
+      setTimeout(() => {
+        if (wantsPlay && player.getPlayerState && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+          document.dispatchEvent(new CustomEvent('music-autoplay-blocked'));
+          armUnlock();
+        }
+      }, 700);
     }
-    function startSynth(){
-      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-      if (!master) {
-        master = ctx.createGain(); master.gain.value = 0;
-        const wet = ctx.createGain(); wet.gain.value = .45;
-        master.connect(ctx.destination); master.connect(reverb()).connect(wet).connect(ctx.destination);
-      }
-      ctx.resume(); next = ctx.currentTime + .1;
-      master.gain.cancelScheduledValues(ctx.currentTime); master.gain.linearRampToValueAtTime(.8, ctx.currentTime + 2.5);
-      timer = setInterval(schedule, 60);
+
+    function armUnlock(){
+      if (unlockBound) return;
+      unlockBound = true;
+      const unlock = () => {
+        document.removeEventListener('click', unlock);
+        document.removeEventListener('touchstart', unlock);
+        unlockBound = false;
+        if (wantsPlay) attemptPlay();
+      };
+      document.addEventListener('click', unlock, { once: true });
+      document.addEventListener('touchstart', unlock, { once: true });
     }
-    function stopSynth(){ clearInterval(timer); if (master) master.gain.linearRampToValueAtTime(0, ctx.currentTime + .6); }
+
+    loadApi();
+
     return {
-      play(){ if (on) return; on = true;
-        if (WEDDING.musicSrc) { audio = audio || Object.assign(new Audio(WEDDING.musicSrc), {loop: true, volume: .7}); audio.play().catch(() => {}); }
-        else startSynth(); },
-      pause(){ if (!on) return; on = false; WEDDING.musicSrc ? audio && audio.pause() : stopSynth(); },
-      get on(){ return on; }
+      play(){ wantsPlay = true; if (apiReady) attemptPlay(); },
+      pause(){ wantsPlay = false; if (player && player.pauseVideo) player.pauseVideo(); setPlaying(false); },
+      get on(){ return playing; }
     };
   })();
-  const musicBtn = $('#music');
-  musicBtn.addEventListener('click', () => { Music.on ? Music.pause() : Music.play(); musicBtn.classList.toggle('playing', Music.on); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && Music.on) { Music.pause(); musicBtn.classList.remove('playing'); } });
+  musicBtn.addEventListener('click', () => { Music.on ? Music.pause() : Music.play(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && Music.on) Music.pause(); });
 
   /* ---------- opening: photos pop out, then fly into the cameos ---------- */
   const cover = $('#cover');
   const wait = ms => new Promise(r => setTimeout(r, ms));
   async function openInvite(){
     if (cover.classList.contains('pop')) return;
-    Music.play(); musicBtn.classList.add('playing');
+    Music.play();
     window.scrollTo(0, 0);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
