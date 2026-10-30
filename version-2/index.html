@@ -340,7 +340,7 @@
       <p class="caps parents">HJ. AHMAD SHUKRI BIN HARUN<br>&amp;<br>HANI SORAYA BINTI ISHAK</p>
       <div class="line"></div>
       <p class="txt" data-i18n="invite">dengan penuh kesyukuran menjemput<br>Tan Sri / Puan Sri / Dato' Seri / Datin Seri /<br>Dato' / Datin / Tuan / Puan / Encik / Cik<br>ke majlis perkahwinan puteri kami</p>
-      <div class="fullname" style="margin-top:14px"><span class="sname script">Alya Humaira</span><span class="patr">binti Ahmad Shukri</span></div>
+      <div class="fullname" style="margin-top:14px"><span class="sname script">Alya Humaira</span><span class="patr">binti Hj Ahmad Shukri</span></div>
       <div class="amp">&amp;</div>
       <div class="fullname"><span class="sname script">Muhammad Hakim</span><span class="patr">bin Zulkhainain</span></div>
     </div>
@@ -535,7 +535,7 @@
       paxUnit: 'orang',
       fPax: 'Bilangan orang', fNotes: 'Catatan', phNotes: 'Ucapan atau catatan (tidak wajib)',
       fGroup: 'Kumpulan Tetamu', groupPlaceholder: 'Pilih satu', errGroup: 'Sila pilih kumpulan tetamu',
-      guestgroup_labels: n => [`Keluarga ${n}`, `Kawan ${n}`, `Rakan sekerja ${n}`, `Kawan kepada ibu bapa ${n}`],
+      guestgroup_labels: n => ['Saudara-mara', 'Kawan-kawan', `Kawan & Rakan Sekerja ${n}`],
       send: 'Hantar', sending: 'Menghantar…', sendErr: 'Maaf, tidak dapat dihantar. Sila cuba lagi.',
       thanksTitle: 'Terima kasih',
       thanksYes: n => `Kehadiran anda (${n} orang) telah direkodkan. Kami menantikan kedatangan anda!`,
@@ -562,7 +562,7 @@
       paxUnit: 'guest(s)',
       fPax: 'Number of people', fNotes: 'Notes', phNotes: 'Wishes or notes (optional)',
       fGroup: 'Guest Group', groupPlaceholder: 'Select one', errGroup: 'Please select a guest group',
-      guestgroup_labels: n => [`${n}'s family`, `${n}'s friends`, `${n}'s colleagues`, `Friends of ${n}'s parents`],
+      guestgroup_labels: n => ['Relatives', 'Friends', `${n}'s Friends and Colleagues`],
       send: 'Send', sending: 'Sending…', sendErr: "Sorry, we couldn't send that. Please try again.",
       thanksTitle: 'Thank you',
       thanksYes: n => `Your attendance (${n} ${n > 1 ? 'people' : 'person'}) has been recorded. We look forward to seeing you!`,
@@ -614,7 +614,7 @@
 
   /* ---------- RSVP ---------- */
   const RSVP_ENDPOINT = '/api/rsvp?side=bride';
-  const GUEST_GROUP_VALUES = ['Family', 'Friends', 'Colleagues', "Parents' Friends"];
+  const GUEST_GROUP_VALUES = ['Relatives', 'Friends', "Bride's Friends and Colleagues"];
   const form = $('#rsvpForm'), thanks = $('#rsvpThanks');
   let lastGroupIndex = -1, lastReply = null, submitting = false;
   const attending = () => (form.querySelector('input[name=attending]:checked') || {}).value;
