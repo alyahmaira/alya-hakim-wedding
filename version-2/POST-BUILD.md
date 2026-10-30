@@ -7,18 +7,23 @@ Edit the `WEDDING` settings block near the bottom of `index.html`:
 - `photos.bride` / `photos.groom` — childhood photos (portrait, face near the top). Put files in `assets/photos/`.
   Both currently use `kid-placeholder.jpg`.
 - `musicSrc` — e.g. `'assets/music.mp3'`. Empty = built-in music-box tune. Use a song you have rights to.
-- `rsvpEndpoint` — Google Apps Script web-app URL (see below). Empty = the RSVP form opens WhatsApp
-  to the first contact with the guest's answers pre-filled.
 - `contacts` — 3 family contacts: `name`, `role` (BM + EN), `phone` in international digits (e.g. `60123456789`).
   Each gets a WhatsApp button (pre-filled greeting) and a Call button.
 - `mapsUrl`, `calendarUrl`, `start` (countdown target, Malaysia time).
 
-## RSVP → Google Sheet
-1. Create a Google Sheet, then **Extensions → Apps Script**; paste `apps-script/Code.gs`.
-2. **Deploy → New deployment → Web app** · Execute as: *Me* · Who has access: *Anyone*. Authorise.
-3. Copy the web-app URL into `WEDDING.rsvpEndpoint`.
-Replies land in the `RSVP` tab: Timestamp, Name, Attending, People, Notes, Language.
-A guest's own reply is remembered on their phone (they see the thank-you card and can send another).
+## RSVP → serverless proxy → Google Sheet
+The RSVP form POSTs to `/api/rsvp?side=bride`, a Vercel serverless function
+(`api/rsvp.js`) that forwards the request to the Google Apps Script URL in the
+`BRIDE_RSVP_ENDPOINT` environment variable.
+
+1. Copy `.env.example` into your Vercel project's Environment Variables
+   (Project Settings → Environment Variables). `BRIDE_RSVP_ENDPOINT` must
+   point at an Apps Script web app that accepts
+   `{ name, phone, attendance, guestCount, guestGroup, message, side }`.
+2. Deploy with `npx vercel` (or your usual flow) so `/api/rsvp` is served
+   alongside the static site.
+3. A guest's own reply is remembered on their phone (they see the thank-you
+   card and can send another).
 
 ## Bottom bar
 Utama · Lokasi · RSVP · Hubungi — appears after the envelope is opened and highlights the section in view.
