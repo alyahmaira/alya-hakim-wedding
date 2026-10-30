@@ -691,6 +691,10 @@
   function showThanks(reply) {
     lastReply = reply; renderThanks();
     form.hidden = true; thanks.hidden = false;
+    // The thank-you card is much shorter than the form it replaces, so the
+    // page would otherwise appear to jump past the RSVP section once the
+    // layout collapses. Re-anchor the scroll position on the card itself.
+    thanks.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try { localStorage.setItem('rsvp', JSON.stringify(reply)); } catch (e) {}
   }
   $('#rsvpAgain').addEventListener('click', () => {
