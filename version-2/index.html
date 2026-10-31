@@ -13,6 +13,7 @@
 <meta property="og:description" content="Sabtu, 26 Disember 2026 · 11.00 pagi – 4.00 petang · ISTAC, Bukit Tunku">
 <meta property="og:image" content="assets/scene.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cpath d='M30 18C21 6 7 6 8 15c1 10 14 9 22 3Zm0 0c9-12 23-12 22-3-1 10-14 9-22 3Z' fill='none' stroke='%236e1a28' stroke-width='3'/%3E%3Cpath d='M28 19 21 35M32 19l7 16' stroke='%236e1a28' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='30' cy='18' r='4' fill='%236e1a28'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://www.youtube.com">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Amiri&display=swap" rel="stylesheet">
@@ -56,6 +57,8 @@
     opacity:0;transition:transform 1.5s cubic-bezier(.34,1.4,.64,1), opacity .45s}
   .k1{left:13%}.k2{right:13%}
   .cap{position:absolute;left:0;right:0;bottom:7%;text-align:center;font-family:'EB Garamond',Georgia,serif;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--burgundy)}
+  .cover.loading{cursor:progress}
+  .cover.loading .tap{opacity:.6;animation:none}
   .cover.pop{cursor:default}
   .cover.pop .envwrap{animation:none}
   .cover.pop .kphoto{opacity:1}
@@ -375,7 +378,7 @@
 
   <section>
     <div class="rv">
-      <div class="caps label" style="margin-bottom:16px">BISMILLAHIRRAHMANIRRAHIM</div>
+      <div class="doa" lang="ar" dir="rtl" style="margin-bottom:16px">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
       <p class="txt" style="margin-bottom:16px" data-i18n="greeting">Assalamualaikum dan Selamat Sejahtera<br>Dengan nama Allah yang Maha Pengasih<br>lagi Maha Penyayang</p>
       <p class="caps parents">HJ. AHMAD SHUKRI BIN HARUN<br>&amp;<br>HANI SORAYA BINTI ISHAK</p>
       <div class="line"></div>
@@ -515,7 +518,7 @@
     <div class="rv" style="max-width:320px">
       <div class="doa" lang="ar">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
       <div class="line"></div>
-      <p class="txt" style="font-style:italic" data-i18n="doa">Ya Allah, berkatilah majlis ini dan satukanlah hati kedua mempelai dengan kasih sayang, iman dan rahmat-Mu, di dunia dan di akhirat.</p>
+      <p class="txt" style="font-style:italic" data-i18n="doa">Ya Allah, berkatilah majlis ini dan satukanlah hati kedua mempelai dengan kasih sayang, iman dan rahmat-Mu, di dunia dan di akhirat. Amin YRA.</p>
       <svg class="ico" width="66" height="44" style="margin-top:22px" aria-hidden="true"><use href="#bow"/></svg>
       <div class="sname script">Alya &amp; Hakim</div>
     </div>
@@ -568,7 +571,7 @@
         msg: { ms: 'Kehadiran dan doa restu anda amat kami hargai.', en: 'Your presence and prayers mean a great deal to us.' } },
       { name: 'Areena Sofea',           role: { ms: 'Adik Pengantin', en: "Bride's Sister" }, phone: '601158937740',
         avatar: 'assets/family/sister.jpg',
-        msg: { ms: 'Tak pasti jalan ke ISTAC? Saya boleh bantu!', en: 'Not sure how to get to ISTAC? I can help!' } }
+        msg: { ms: 'Jom raikan hari bahagia kakak!', en: "Come celebrate my sister's big day!" } }
     ],
     mapsUrl: 'https://www.google.com/maps/search/?api=1&query=ISTAC-IIUM%2C%2024%20Persiaran%20Tuanku%20Syed%20Sirajuddin%2C%2050480%20Kuala%20Lumpur',
     wazeUrl: 'https://waze.com/ul?q=ISTAC-IIUM%2C%2024%20Persiaran%20Tuanku%20Syed%20Sirajuddin%2C%2050480%20Kuala%20Lumpur&navigate=yes',
@@ -644,7 +647,7 @@
       contactTitle: 'HUBUNGI KAMI', contactIntro: 'Untuk sebarang pertanyaan',
       callBtn: 'Telefon',
       waHello: 'Assalamualaikum, saya ingin bertanya tentang majlis perkahwinan Alya & Hakim.',
-      doa: 'Ya Allah, berkatilah majlis ini dan satukanlah hati kedua mempelai dengan kasih sayang, iman dan rahmat-Mu, di dunia dan di akhirat.'
+      doa: 'Ya Allah, berkatilah majlis ini dan satukanlah hati kedua mempelai dengan kasih sayang, iman dan rahmat-Mu, di dunia dan di akhirat. Amin YRA.'
     },
     en: {
       music: 'Music', weddingOf: 'THE WEDDING OF',
@@ -673,7 +676,7 @@
       contactTitle: 'CONTACT US', contactIntro: 'For any enquiries',
       callBtn: 'Call',
       waHello: "Assalamualaikum, I'd like to ask about Alya & Hakim's wedding.",
-      doa: 'O Allah, bless this gathering and unite the hearts of the bride and groom with love, faith and Your mercy, in this world and the hereafter.'
+      doa: 'O Allah, bless this gathering and unite the hearts of the bride and groom with love, faith and Your mercy, in this world and the hereafter. Amin YRA.'
     }
   };
   function setLang(lang, animate = true){
@@ -917,7 +920,7 @@
         videoId: VIDEO_ID, width: 1, height: 1,
         playerVars: { autoplay: 0, start: START_TIME, controls: 0, disablekb: 1, playsinline: 1, modestbranding: 1 },
         events: {
-          onReady(){ apiReady = true; if (wantsPlay) attemptPlay(); },
+          onReady(){ apiReady = true; document.dispatchEvent(new CustomEvent('music-player-ready')); if (wantsPlay) attemptPlay(); },
           onStateChange(e){
             if (e.data === YT.PlayerState.PLAYING) {
               setPlaying(true);
@@ -942,7 +945,8 @@
       player.seekTo(START_TIME, true);
       player.playVideo();
       setTimeout(() => {
-        if (wantsPlay && player.getPlayerState && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+        const state = player.getPlayerState && player.getPlayerState();
+        if (wantsPlay && !playing && state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
           document.dispatchEvent(new CustomEvent('music-autoplay-blocked'));
           armUnlock();
         }
@@ -956,7 +960,7 @@
         document.removeEventListener('click', unlock);
         document.removeEventListener('touchstart', unlock);
         unlockBound = false;
-        if (wantsPlay) attemptPlay();
+        if (wantsPlay && !playing) attemptPlay();
       };
       document.addEventListener('click', unlock, { once: true });
       document.addEventListener('touchstart', unlock, { once: true });
@@ -967,7 +971,8 @@
     return {
       play(){ wantsPlay = true; if (apiReady) attemptPlay(); },
       pause(){ wantsPlay = false; if (player && player.pauseVideo) player.pauseVideo(); setPlaying(false); },
-      get on(){ return playing; }
+      get on(){ return playing; },
+      get ready(){ return apiReady; }
     };
   })();
   musicBtn.addEventListener('click', () => { Music.on ? Music.pause() : Music.play(); });
@@ -976,8 +981,20 @@
   /* ---------- opening: photos pop out, then fly into the cameos ---------- */
   const cover = $('#cover');
   const wait = ms => new Promise(r => setTimeout(r, ms));
+  /* Browsers only allow sound when playback starts during the tap itself. If the
+     envelope were tapped before the hidden YouTube player had loaded, the music
+     would start too late and be blocked, so the envelope waits (max 4s, so a slow
+     or blocked YouTube never traps guests on the cover) until the player is ready. */
+  const tapLabel = cover.querySelector('.tap'), tapText = tapLabel.textContent;
+  const releaseCover = () => { cover.classList.remove('loading'); tapLabel.textContent = tapText; };
+  if (!Music.ready) {
+    cover.classList.add('loading'); tapLabel.textContent = 'loading…';
+    document.addEventListener('music-player-ready', releaseCover, { once: true });
+    document.addEventListener('music-error', releaseCover, { once: true });
+    setTimeout(releaseCover, 4000);
+  }
   async function openInvite(){
-    if (cover.classList.contains('pop')) return;
+    if (cover.classList.contains('pop') || cover.classList.contains('loading')) return;
     Music.play();
     window.scrollTo(0, 0);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
